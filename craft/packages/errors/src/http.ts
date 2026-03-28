@@ -15,7 +15,7 @@ export const HTTP_STATUS={
   [ErrorCode.SERVER_INTERNAL]:500,
   [ErrorCode.SERVER_UNAVAILABLE]:503,
   [ErrorCode.SERVER_TIMEOUT]:503,
-}
+} as const
 export class HttpError extends Error {
   readonly status: number
   readonly body: ErrorResponse
