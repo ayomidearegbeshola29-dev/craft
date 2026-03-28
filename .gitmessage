@@ -1,0 +1,9 @@
+feat: add contextual error logging
+
+- Implement correlation ID generation for request tracking
+- Add ErrorLogger with structured JSON logging
+- Log errors with stack traces, user context, and request metadata
+- Integrate HTTP error mapping with status codes
+- Add comprehensive test coverage for all modules
+
+Closes #209

@@ -1,0 +1,83 @@
+const fs = require('fs')
+const base = 'C:/Users/user/Desktop/DRIPS/craft/craft/packages/logger'
+fs.mkdirSync(base + '/src/__tests__', { recursive: true })
+
+// types.ts
+fs.writeFileSync(base + '/src/types.ts', [
+  "export type LogLevel = 'debug' | 'info' | 'warn' | 'error'",
+  "export type CorrelationId = string",
+  "",
+  "export interface LogContext {",
+  "  correlationId: CorrelationId",
+  "  service?: string",
+  "  userId?: string",
+  "  requestPath?: string",
+  "  requestMethod?: string",
+  "  statusCode?: number",
+  "  durationMs?: number",
+  "  [key: string]: unknown",
+  "}",
+  "",
+  "export interface LogEntry {",
+  "  level: LogLevel",
+  "  message: string",
+  "  timestamp: string",
+  "  context: LogContext",
+  "  error?: { name: string; message: string; stack?: string }",
+  "}",
+  "",
+  "export interface LogTransport {",
+  "  write(entry: LogEntry): void",
+  "}",
+].join('\n'), 'utf8')
+
+// correlation.ts
+fs.writeFileSync(base + '/src/correlation.ts', [
+  "import { CorrelationId } from './types'",
+  "",
+  "const CHARS = 'abcdefghijklmnopqrstuvwxyz0123456789'",
+  "",
+  "/** Generates a URL-safe correlation ID. Uses crypto.randomUUID when available. */",
+  "export function generateCorrelationId(): CorrelationId {",
+  "  if (typeof crypto !== 'undefined' && crypto.randomUUID) {",
+  "    return crypto.randomUUID()",
+  "  }",
+  "  let id = ''",
+  "  for (let i = 0; i < 32; i++) {",
+  "    id += CHARS[Math.floor(Math.random() * CHARS.length)]",
+  "    if (i === 7 || i === 11 || i === 15 || i === 19) id += '-'",
+  "  }",
+  "  return id",
+  "}",
+  "",
+  "/** Extracts a correlation ID from a request header, or generates a new one. */",
+  "export function resolveCorrelationId(header?: string | string[]): CorrelationId {",
+  "  if (typeof header === 'string' && header.length > 0) return header",
+  "  if (Array.isArray(header) && header[0]) return header[0]",
+  "  return generateCorrelationId()",
+  "}",
+].join('\n'), 'utf8')
+
+// transports.ts
+fs.writeFileSync(base + '/src/transports.ts', [
+  "import { LogEntry, LogTransport } from './types'",
+  "",
+  "/** Writes structured JSON to stdout (info/debug) or stderr (warn/error). */",
+  "export class ConsoleTransport implements LogTransport {",
+  "  write(entry: LogEntry): void {",
+  "    const line = JSON.stringify(entry)",
+  "    if (entry.level === 'error' || entry.level === 'warn') {",
+  "      process.stderr.write(line + '\\n')",
+  "    } else {",
+  "      process.stdout.write(line + '\\n')",
+  "    }",
+  "  }",
+  "}",
+  "",
+  "/** Captures entries in memory - useful for testing. */",
+  "export class MemoryTransport implements LogTransport {",
+  "  readonly entries: LogEntry[] = []",
+  "  write(entry: LogEntry): void { this.entries.push(entry) }",
+  "  clear(): void { this.entries.length = 0 }",
+  "}",
+].join('\n'), 'utf8')
