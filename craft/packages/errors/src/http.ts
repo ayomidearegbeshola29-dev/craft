@@ -27,3 +27,8 @@ export class HttpError extends Error {
     Object.setPrototypeOf(this, new.target.prototype)
   }
 }
+
+/** Type guard — narrows an unknown caught value to HttpError. */
+export function isHttpError(err: unknown): err is HttpError {
+  return err instanceof HttpError
+}
